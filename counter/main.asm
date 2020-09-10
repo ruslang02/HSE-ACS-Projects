@@ -21,8 +21,10 @@ section '.main' executable
     mov rax, STATUS_MSG
     call str_print
 
-    mov rax, 567
-    call num_print
+    mov rdx, 32h
+    call digit_print
+    ;mov rax, 567
+    ;call num_print
 
     call exit
     ret
@@ -34,18 +36,25 @@ section '.num_func' executable
     xor rbx, rbx
     .next_digit:
       xor rdx, rdx
-      mov cl, byte 10
+      mov rcx, '10'
       div rcx
       call digit_print
-      cmp eax, dword 0
-      jne .next_digit
+      ;cmp eax, dword 0
+      ;jne .next_digit
     ret
   ; | input:
   ; rdx = number
   digit_print:
     push rax
-    mov rax, WELCOME_MSG
-    call str_print
+    push rbx
+    push rcx
+    mov rcx, rdx
+    mov rdx, 4
+    mov rax, 4
+    mov rbx, 1
+    int 80h
+    pop rcx
+    pop rbx
     pop rax
     ret
 
