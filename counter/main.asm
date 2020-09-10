@@ -5,7 +5,7 @@ section '.data' writeable
   _data:
     WELCOME_MSG db "Welcome to the Counter app!", 10, 0
     NEW_ITEM_MSG db "Enter new item's price: ", 0
-    STATUS_MSG db "Number of items: 0", 0
+    STATUS_MSG db "Number of items: ", 0
     TOTAL_MSG db "It's time to pay! Total price: ", 0
     
 section '.main' executable
@@ -21,7 +21,32 @@ section '.main' executable
     mov rax, STATUS_MSG
     call str_print
 
+    mov rax, 567
+    call num_print
+
     call exit
+    ret
+
+section '.num_func' executable
+  ; | input:
+  ; rax = number
+  num_print:
+    xor rbx, rbx
+    .next_digit:
+      xor rdx, rdx
+      mov cl, byte 10
+      div rcx
+      call digit_print
+      cmp eax, dword 0
+      jne .next_digit
+    ret
+  ; | input:
+  ; rdx = number
+  digit_print:
+    push rax
+    mov rax, WELCOME_MSG
+    call str_print
+    pop rax
     ret
 
 section '.str_func' executable
