@@ -24,8 +24,11 @@
 ### greeting/main
 
 Принимает на вход имя пользователя и приветствует его. Написаны функции для ввода/вывода при помощи системных вызовов.
+
 ![screenshot](./greeting/main-screenshot.png)
 
 ### hello-world-win32
 
 Программа, отображающая диалоговое окно с Hello, world! при помощи средств WinAPI.
+
+![screenshot](./hello-world-win32/screenshot.png)
