@@ -51,11 +51,17 @@ section '.main' executable
       call string_to_number
 
       inc [TOTAL]
-      add [TOTAL_PRICE], INPUT
-      jmp .next_item
+      add [TOTAL_PRICE], rax
+      xor rcx, rcx
+      cmp rcx, [INPUT]
+      jz .next_item
+    
+    .finish:
+      mov rax, TOTAL_MSG
+      call str_print
 
-    ;mov rax, 567
-    ;call num_print
+      mov rax, TOTAL_PRICE
+      call print_number
 
     call exit
     ret
