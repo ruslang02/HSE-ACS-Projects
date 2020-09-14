@@ -11,7 +11,7 @@ section '.data' writeable
     NEW_ITEM_MSG db "Enter new item's price: ", 0
     STATUS_MSG db "Number of items: ", 0
     TOTAL_MSG db "It's time to pay! Total price: ", 0
-
+    ZERO_MSG db "0"
     INPUT dq ?
     TOTAL dq 0
     TOTAL_PRICE dq 0
@@ -46,22 +46,23 @@ section '.main' executable
       mov rax, NEW_ITEM_MSG
       call str_print
 
-      call str_scan
-      mov rax, INPUT
-      call string_to_number
+      call input_number
 
       inc [TOTAL]
       add [TOTAL_PRICE], rax
       xor rcx, rcx
-      cmp rcx, [INPUT]
-      jz .next_item
+      cmp rax, 0
+      jne .next_item
     
     .finish:
       mov rax, TOTAL_MSG
       call str_print
 
-      mov rax, TOTAL_PRICE
+      mov rax, [TOTAL_PRICE]
       call print_number
+
+      mov rax, NEW_LINE
+      call str_print
 
     call exit
     ret
