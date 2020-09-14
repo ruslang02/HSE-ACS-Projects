@@ -13,7 +13,8 @@ section '.data' writeable
     TOTAL_MSG db "It's time to pay! Total price: ", 0
 
     INPUT dq ?
-    TOTAL rq 1
+    TOTAL dq 0
+    TOTAL_PRICE dq 0
 section '.bss' writeable 
     _bss_char rb 1
     _buffer_char_size equ 2
@@ -32,22 +33,26 @@ section '.main' executable
     mov rax, WELCOME_MSG
     call str_print
 
-    mov rax, STATUS_MSG
-    call str_print
+    .next_item:
+      mov rax, STATUS_MSG
+      call str_print
+      
+      mov rax, [TOTAL]
+      call print_number
 
-    mov rax, 0
-    call print_number
+      mov rax, NEW_LINE
+      call str_print
 
-    mov rax, NEW_LINE
-    call str_print
+      mov rax, NEW_ITEM_MSG
+      call str_print
 
-    mov rax, NEW_ITEM_MSG
-    call str_print
+      call str_scan
+      mov rax, INPUT
+      call string_to_number
 
-    call str_scan
-    mov rax, INPUT
-    call string_to_number
-    call print_number
+      inc [TOTAL]
+      add [TOTAL_PRICE], INPUT
+      jmp .next_item
 
     ;mov rax, 567
     ;call num_print
