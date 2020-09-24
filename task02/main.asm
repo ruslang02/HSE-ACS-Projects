@@ -26,11 +26,14 @@ section '.code' executable
     mov rax, DESCRIPTION
     call str_print
 
-    mov rax, ENTER_N
-    call str_print
+    input_n:
+      mov rax, ENTER_N
+      call str_print
 
-    call input_number
-    mov [N], rax
+      call input_number
+      cmp rax, 0
+      jl input_n
+      mov [N], rax
 
     call read_array
 
@@ -194,8 +197,8 @@ print_number:
     push rcx
     push rdx
     xor rcx, rcx
-    ;cmp rax, 0
-    ;jl .toggle_invert
+    cmp rax, 0
+    jl .toggle_invert
     .next_iter:
         mov rbx, 10
         xor rdx, rdx
@@ -213,16 +216,16 @@ print_number:
         call print_char
         dec rcx
         jmp .print_iter
-    ;.toggle_invert:
-    ;    push rax
-    ;    mov rax, 45
-    ;    call print_char
-    ;    pop rax
-    ;    push rbx
-    ;    mov rbx, -1
-    ;     imul rbx
-    ;    pop rbx
-    ;    jmp .next_iter
+    .toggle_invert:
+        push rax
+        mov rax, 45
+        call print_char
+        pop rax
+        push rbx
+        mov rbx, -1
+        imul rbx
+        pop rbx
+        jmp .next_iter
     .close:
         pop rdx
         pop rcx
@@ -318,8 +321,6 @@ string_to_number:
     .to_number:
         cmp rbx, 0
         je .close
-        cmp r11, 1
-        je .invert
         pop rdx
         imul rdx, rcx
         imul rcx, 10
@@ -336,8 +337,9 @@ string_to_number:
         mov rbx, -1
         imul rbx
         pop rbx
-        jmp .to_number
     .close:
+        cmp r11, 1
+        je .invert
         pop r11
         pop rdx
         pop rcx
