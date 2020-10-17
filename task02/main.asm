@@ -5,6 +5,7 @@ section '.data' writable
   ARRAY_A db "Array A:", 10, 0
   ARRAY_B db "Array B:", 10, 0
   ENTER_N db "Enter N: ", 0
+  NUM_ERROR db "Number is either too small or too big.", 10, 0
   INPUT_BEFORE db "[", 0
   INPUT_AFTER db "] = ", 0
   EMPTY_MSG db "(empty)", 10, 0
@@ -12,6 +13,9 @@ section '.data' writable
   MINUS dq "-"
   N dq ?
   R dq 0
+  MAX dq 100
+  M dq 4294967296
+  M_N dq -4294967295
   ARRAY rq 100
   OUTPUT_ARRAY rq 100
 section '.bss' writeable 
@@ -32,28 +36,34 @@ section '.code' executable
 
       call input_number
       cmp rax, 0
-      jl input_n
+      jle .error
+      cmp rax, [MAX]
+      jge .error
       mov [N], rax
+      jmp .array_process
+    .error:
+      mov rax, NUM_ERROR
+      call str_print
+      jmp input_n
+    .array_process:
+      call read_array
 
-    call read_array
+      mov rax, ARRAY_A
+      call str_print
+      mov rax, ARRAY
+      mov rbx, [N]
+      call print_array
 
-    mov rax, ARRAY_A
-    call str_print
-    mov rax, ARRAY
-    mov rbx, [N]
-    call print_array
+      call process_array
 
-    call process_array
+      mov rax, ARRAY_B
+      call str_print
+      mov rax, OUTPUT_ARRAY
+      mov rbx, [R]
+      call print_array
 
-    mov rax, ARRAY_B
-    call str_print
-    mov rax, OUTPUT_ARRAY
-    mov rbx, [R]
-    call print_array
-
-    call exit
-    ret
-  
+      call exit
+      ret
   exit:
     mov rax, 1
     mov rbx, 0
@@ -75,13 +85,23 @@ section '.read_array' executable
       call str_print; [i] = ...
 
       call input_number
+      cmp rax, [M]
+      jge .error
+      cmp rax, [M_N]
+      jle .error
       mov [ARRAY + rcx * 8], rax
       inc rcx; rcx++
       cmp rcx, [N]; if (rcx == N) return;
       jnz .next_item
-    pop rcx
-    pop rax
-    ret
+      jmp .exit
+    .error:
+      mov rax, NUM_ERROR
+      call str_print
+      jmp .next_item
+    .exit:
+      pop rcx
+      pop rax
+      ret
 section '.print_array' executable
   ; | input:
   ; rax = pointer to array
