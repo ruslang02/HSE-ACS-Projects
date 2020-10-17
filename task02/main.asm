@@ -308,9 +308,15 @@ input_number:
     mov rax, _buffer_number
     mov rbx, _buffer_number_size
     call input_string
+    cmp [rax], byte 0
+    je .error
     call string_to_number
-    pop rbx
-    ret
+    jmp .exit
+    .error:
+      mov rax, [M_N]
+    .exit:
+      pop rbx
+      ret
 
 section '.string_to_number' executable
 ; | input:
