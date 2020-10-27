@@ -5,20 +5,40 @@ section '.data' writable
   DESCRIPTION db "Ruslan Garifullin (https://github.com/ruslang02)", 10, "From a set of line segments (set by the coords of two points) find parallel ones.", 10, 10, 0
   M dq 4294967296
   M_N dq -4294967295
+  N dq 5
+  ARRAY rq 10; 5 * 2
 section '.bss' writeable 
     _bss_char rb 1
     _buffer_char_size equ 2
     _buffer_char rb _buffer_char_size
 
     _buffer_number_size equ 21
-    _buffer_number rb _buffer_number_size
+    _x_buffer rb _buffer_number_size
+    _y_buffer rb _buffer_number_size
 
 section '.code' executable
   _start:
     mov rax, DESCRIPTION
     call str_print
-    call exit
-    ret
+    
+    xor rcx, rcx
+    .inputcoords:
+      call input_coords
+      mov [ARRAY + rcx*2], rax
+      mov [ARRAY + rcx*2 + 1], rbx
+      cmp rcx, [N]
+      je .process
+      inc rcx
+    .process:
+      xor rcx, rcx
+      .loop:
+        
+        cmp rcx, [N]
+        je .exit
+        inc rcx
+    .exit:
+      call exit
+      ret
   exit:
     mov rax, 1
     mov rbx, 0
@@ -131,20 +151,43 @@ string_to_number:
         pop rbx
         ret
 
-section '.input_number' executable
+section '.input_coords' executable
 ; | output:
-; rax = number
-input_number:
+; rax = x coord
+; rbx = y coord
+input_coords:
+    push rdx
+    push rcx
     push rbx
-    mov rax, _buffer_number
+    mov rax, _x_buffer
     mov rbx, _buffer_number_size
     call input_string
     cmp [rax], byte 0
     je .error
+    xor rcx, rcx
+    .find_space:
+      inc rcx
+      cmp [_x_buffer+rcx], byte ' '
+      je .split
+      cmp [_x_buffer+rcx], byte 0
+      je .error
+      jmp find_space
+    .split:
+      mov [_x_buffer+rcx], byte 0
+      call string_to_number
+    .copy_buffer:
+      xor rdx, rdx
+      .loop:
+        mov [_y_buffer+rdx], [_x_buffer+rcx+rdx]
+        cmp [_y_buffer+rdx], byte 0
+        jne .loop
+    mov rax, _y_buffer
     call string_to_number
     jmp .exit
     .error:
       mov rax, [M_N]
     .exit:
       pop rbx
+      pop rcx
+      pop rdx
       ret
