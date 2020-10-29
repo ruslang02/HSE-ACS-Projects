@@ -1,5 +1,5 @@
 all: build
 
 build:
-	fasm ./main.asm
-	ld main.o -o main
+	fasm ./main.asm ./main.o
+	gcc main.o -o main
