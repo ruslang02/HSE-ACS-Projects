@@ -1,102 +1,84 @@
 format ELF64
 public main
-extrn scanf
-extrn printf
-
+N EQU 5; Number of lines to compare.
+WORD_SIZE EQU 4; dd size
+include 'io.asm'
 section '.text' writable
   main:
-    mov rdi, DESCRIPTION
-    xor rsi, rsi
-    xor rax, rax
-    call printf
     finit
+    print DESCRIPTION, N
   input_lines:
-    mov [i], 0
+    mov [temp], 0
     .next:
-      inc [i]
-
-      mov rdi, LINE_INPUT
-      mov rsi, rcx
-      mov rdx, rcx
-      xor rax, rax
-      call printf
-
-      push rbp
-      lea rdi, [LINE_INPUT_FORMAT]
-      mov rsi, xLine1
-      mov rdx, yLine1
-      mov rcx, xLine2
-      mov r8, yLine2
-      xor rax, rax
-      call scanf
-      pop rbp
-
-      fld qword [xLine1]
-      fsub qword [xLine2]
+      print LINE_INPUT, [temp]
       
-
-      fld qword [yLine1]
-      fsub qword [yLine2]
+      read LINE_INPUT_FORMAT, xLine1, yLine1, xLine2, yLine2
+      ; <tg A = (y2 - y1) / (x2 - x1)>
+      fld dword [xLine2]
+      fsub dword [xLine1]
+      fld dword [yLine2]
+      fsub dword [yLine1]
       fdivrp
+      ; </tg A>
       mov rdx, LINES
-      fst qword [rdx+rcx]
-
-
-
-
-      mov rcx, [i]
-      cmp rcx, [N]
-      jne .next
-      jmp process_lines
-  
+      fst dword [temp2]; put float number into array
+      mov eax, [temp2]
+      cmp eax, [NaN]
+      jne .inc
+      print POINT_PROVIDED_ERROR
+      jmp .next
+      .inc:
+        mov rcx, [temp]
+        mov [rdx + rcx * WORD_SIZE], eax
+        inc [temp]
+        mov rcx, [temp]
+        cmp rcx, N
+        jne .next  
   process_lines:
+    mov rbx, LINES
     xor rcx, rcx
     .next_line:
       mov rdx, rcx
       inc rdx
-        ret
       .find_parallel_line:
-        mov rbx, LINES
-        fld qword [rbx + rcx]
-        fcom qword [rbx + rdx]
-        fstsw ax
-        sahf
+        ; tg A = tg B => lines are parallel
+        mov eax, [rbx + rcx * WORD_SIZE]
+        cmp eax, [rbx + rdx * WORD_SIZE]
         jne .check_loop
       .output_line:
         push rcx
         push rdx
-        mov rdi, LINE_OUTPUT
-        mov rsi, rcx
-;       mov rdx, rdx
-        xor rax, rax
-        call printf
+        print LINE_OUTPUT, rcx, rdx
         pop rdx
         pop rcx
       .check_loop:
         inc rdx
-        cmp rdx, [N]
+        cmp rdx, N
         jne .find_parallel_line
       .inc_counter:
         inc rcx
-        cmp rcx, [N]
+        cmp rcx, N - 1
         jne .next_line
-        jmp exit
   exit:
     mov rax, 1
     int 80h
     ret
- 
+
 section '.data' writable
-  DESCRIPTION db "Ruslan Garifullin (https://github.com/ruslang02)", 10, "From a set of line segments (set by the coords of two points) find parallel ones.", 10, 10, 0
-  ; M dq 4294967296
-  ; M_N dq -4294967295
-  N dq 5
-  LINES rq 5; double[5]
+  DESCRIPTION db\
+    "Ruslan Garifullin (https://github.com/ruslang02)", 10,\ 
+    "From N=%d lines (set by the coords of two points) find parallel ones.", 10,\ 
+    "Input format: <x1> <y1> <x2> <y2>. Supports floating-point numbers, separated by '.'", 10,\ 
+    10, 0
+  POINT_PROVIDED_ERROR db "You have given a point. Line expected.", 10, 0
+  LINES rd N; float[N]
   LINE_INPUT db "Line %d: ", 0
   LINE_INPUT_FORMAT db "%f %f %f %f", 0
   LINE_OUTPUT db "Line #%d is parallel to line #%d.", 10, 0
-  xLine1 dq ?
-  yLine1 dq ?
-  xLine2 dq ?
-  yLine2 dq ?
-  i dq 0
+  xLine1 dd ?
+  yLine1 dd ?
+  xLine2 dd ?
+  yLine2 dd ?
+  temp dq 0
+  temp2 dd 0
+  NaN dd 0xffc00000
