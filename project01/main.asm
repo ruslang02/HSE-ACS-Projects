@@ -68,7 +68,7 @@ section '.data' writable
   DESCRIPTION db\
     "Ruslan Garifullin (https://github.com/ruslang02)", 10,\ 
     "From N=%d lines (set by the coords of two points) find parallel ones.", 10,\ 
-    "Input format: <x1> <y1> <x2> <y2>. Supports floating-point numbers, separated by '.'", 10,\ 
+    "Input format: <x1> <y1> <x2> <y2>.", 10,\ 
     10, 0
   POINT_PROVIDED_ERROR db "You have given a point. Line expected.", 10, 0
   LINES rd N; float[N]
