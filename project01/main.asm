@@ -2,68 +2,77 @@ format ELF64
 public main
 N EQU 5; Number of lines to compare.
 WORD_SIZE EQU 4; dd size
-include 'io.asm'
+include 'io.asm'; I/O macros
 section '.text' writable
   main:
-    finit
     print DESCRIPTION, N
-  input_lines:
-    mov [temp], 0
-    .next:
-      print LINE_INPUT, [temp]
-      
-      read LINE_INPUT_FORMAT, xLine1, yLine1, xLine2, yLine2
-      ; <tg A = (y2 - y1) / (x2 - x1)>
-      fld dword [xLine2]
-      fsub dword [xLine1]
-      fld dword [yLine2]
-      fsub dword [yLine1]
-      fdivrp
-      ; </tg A>
-      mov rdx, LINES
-      fst dword [temp2]; put float number into array
-      mov eax, [temp2]
-      cmp eax, [NaN]
-      jne .inc
-      print POINT_PROVIDED_ERROR
-      jmp .next
-      .inc:
-        mov rcx, [temp]
-        mov [rdx + rcx * WORD_SIZE], eax
-        inc [temp]
-        mov rcx, [temp]
-        cmp rcx, N
-        jne .next  
-  process_lines:
-    mov rbx, LINES
-    xor rcx, rcx
-    .next_line:
-      mov rdx, rcx
-      inc rdx
-      .find_parallel_line:
-        ; tg A = tg B => lines are parallel
-        mov eax, [rbx + rcx * WORD_SIZE]
-        cmp eax, [rbx + rdx * WORD_SIZE]
-        jne .check_loop
-      .output_line:
-        push rcx
-        push rdx
-        print LINE_OUTPUT, rcx, rdx
-        pop rdx
-        pop rcx
-      .check_loop:
-        inc rdx
-        cmp rdx, N
-        jne .find_parallel_line
-      .inc_counter:
-        inc rcx
-        cmp rcx, N - 1
-        jne .next_line
-  exit:
+    call input_lines
+    call process_lines
+
     mov rax, 1
     int 80h
+  input_lines:
+    mov rbx, LINES
+    mov rcx, N
+    .next:
+      mov rdx, N
+      sub rdx, rcx
+      print LINE_INPUT, rdx; input lines data
+      ; using scanf resets all registers
+      read LINE_INPUT_FORMAT, x1, y1, x2, y2
+      call count_tg
+      cmp al, byte 1; NaN check
+      jne .continue
+      .error:
+        call print_error
+        jmp .next
+      .continue:
+        fstp dword [rbx + rdx * WORD_SIZE]; load angle tan into array
+        loop .next
     ret
-
+  print_error:
+    print POINT_PROVIDED_ERROR
+    ret
+  ; output: ax - status flags
+  count_tg:
+    finit; reset FPU state
+    ; <tg A = (y2 - y1) / (x2 - x1)>
+    fld dword [x2]
+    fsub dword [x1]
+    fld dword [y2]
+    fsub dword [y1]
+    fdivrp; reverse divide
+    ; </tg A>
+    fstsw ax; load status flags into AX
+    ret
+  process_lines:
+    ; process lines, find parallel
+    mov rbx, LINES; save array pointer into register, otherwise does not compile
+    mov rcx, N
+    dec rcx
+    .next_line:
+    mov rdx, rcx
+    .find_parallel_line:
+      ; tg A = tg B => lines are parallel
+      ; i tried to do comparison by eplison but the values
+      ; can not load into the FPU (endianess) so i left it like this
+      ;
+      ; fld dword [rbx + (rcx + (-1)) * WORD_SIZE]
+      ; fsub dword [rbx + rdx * WORD_SIZE]
+      ; fcomp dword [EPSILON]
+      mov eax, [rbx + (rcx + (-1)) * WORD_SIZE]
+      cmp eax, [rbx + rdx * WORD_SIZE]
+      je .print
+      jmp .continue
+    .print:
+      dec rcx
+      print LINE_OUTPUT, rdx, rcx
+      inc rcx
+    .continue:
+      loop .find_parallel_line
+    mov rcx, rdx
+    loop .next_line
+    ret
 section '.data' writable
   DESCRIPTION db\
     "Ruslan Garifullin (https://github.com/ruslang02)", 10,\ 
@@ -75,10 +84,7 @@ section '.data' writable
   LINE_INPUT db "Line %d: ", 0
   LINE_INPUT_FORMAT db "%f %f %f %f", 0
   LINE_OUTPUT db "Line #%d is parallel to line #%d.", 10, 0
-  xLine1 dd ?
-  yLine1 dd ?
-  xLine2 dd ?
-  yLine2 dd ?
-  temp dq 0
-  temp2 dd 0
-  NaN dd 0xffc00000
+  x1 dd ?
+  y1 dd ?
+  x2 dd ?
+  y2 dd ?
