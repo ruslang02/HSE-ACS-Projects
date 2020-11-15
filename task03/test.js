@@ -6,7 +6,7 @@ const TEST_COUNT = 1;
 
 function compile() {
     try {
-        const compile = child_process.execSync('c++ main.cpp -o main').toString();
+        const compile = child_process.execSync('c++ main.cpp -o main -pthread').toString();
         if (compile) console.log(`Compiler output:\n${compile}`);
         return true;
     } catch (e) {
