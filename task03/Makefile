@@ -1,4 +1,4 @@
 all: build
 
 build:
-	c++ main.cpp -o main
+	c++ main.cpp -lpthread -o main
