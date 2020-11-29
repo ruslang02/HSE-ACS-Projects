@@ -1,0 +1,4 @@
+C is an intersection of sets A and B
+C is NOT a union of sets A and B
+C is NOT a relative complement of A in B
+C is NOT a relative complement of B in A

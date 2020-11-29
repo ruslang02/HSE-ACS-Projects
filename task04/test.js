@@ -4,7 +4,7 @@ const { join } = require('path');
 const { readFile } = fs.promises;
 
 const TEST_COUNT = 6;
-const COMPILER = 'c++ main.cpp -lpthread -o main';
+const COMPILER = 'c++ main.cpp -fopenmp -o main';
 const INPUT_DIR = join(__dirname, 'test', 'input');
 const OUTPUT_DIR = join(__dirname, 'test', 'output');
 
@@ -47,7 +47,10 @@ Expected output:
 ${expected}
 
 Given output:
-${given}`);
+${given}
+
+Output:
+${result.toString()}`);
       console.log(`✅ Test #${i} finished successfully in ${Date.now() - time}ms.`);
     } catch (e) {
       console.log(`❌ Test #${i} failed.`, 'No output file was generated.');
