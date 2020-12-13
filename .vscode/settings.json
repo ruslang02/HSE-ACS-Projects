@@ -88,6 +88,21 @@
     "ios": "cpp",
     "locale": "cpp",
     "queue": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "__functional_03": "cpp",
+    "__memory": "cpp",
+    "filesystem": "cpp",
+    "strstream": "cpp",
+    "cfenv": "cpp",
+    "semaphore": "cpp",
+    "cassert": "cpp",
+    "cerrno": "cpp",
+    "cfloat": "cpp",
+    "ciso646": "cpp",
+    "climits": "cpp",
+    "cstdbool": "cpp",
+    "version": "cpp",
+    "*.inc": "cpp",
+    "*.rh": "cpp"
   }
 }
