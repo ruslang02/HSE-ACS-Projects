@@ -124,6 +124,11 @@ int main(int argc, char** argv)
       break;
   }
 
+  if (WRITER_COUNT < 1 || READER_COUNT < 1) {
+    std::cerr << "Incorrect format.\nFormat: ./main <num_writers> <num_readers>.\n";
+    return 1;
+  }
+
   sem_init(&writing, 0, 1);
   sem_init(&write_access, 0, 1);
   sem_init(&cout_access, 0, 1);
@@ -140,9 +145,9 @@ int main(int argc, char** argv)
   pthread_t writer[WRITER_COUNT], reader[READER_COUNT];
   int writers[WRITER_COUNT], readers[READER_COUNT];
 
-  for (int i = 0; i < WRITER_COUNT - 1; i++)
+  for (int i = 0; i < WRITER_COUNT; i++)
   {
-    writers[i] = i + 1;
+    writers[i] = i;
     pthread_create(&writer[i], nullptr, Writer, (void *)(writers + i));
   }
 
@@ -152,9 +157,7 @@ int main(int argc, char** argv)
     pthread_create(&reader[i], nullptr, Reader, (void *)(readers + i));
   }
 
-  int i = 0;
-
-  Writer((void *)&i);
+  sleep(25);
 
   return 0;
 }
